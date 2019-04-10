@@ -1,10 +1,9 @@
-function airfoilCoord = genAirfoil(maxCamber, locCamber, thickness,def)
+function airfoilCoord = genAirfoil(maxCamber, locCamber, thickness)
 
 % Inputs:
 % 1. maximum camber
 % 2. location of maximum camber
 % 3. maximum thickness
-% 4. number used to define the airfoil in a text file
 
 % converting the inputs to fractions
 maxCamber = maxCamber/100; 
@@ -26,7 +25,6 @@ x = [1.000000 0.9916770 0.9803640 0.9672594 0.9527094 0.9371906 ...
     0.8785821e-2 0.6781149e-2 0.5048426e-2 0.3577154e-2 0.2362688e-2 ...
     0.1403607e-2 0.6990502e-3 0.2434807e-3 0.2600131e-4];
    
-
 %thickness distribution
 yt = thickness .* (1.4845.*x.^0.5 - 0.63.*x - 1.758.*x.^2 + 1.4215.*x.^3 - 0.5075.*x.^4);
 
@@ -56,19 +54,19 @@ for i = 1:length(x)
     theta = atan(dyc);
     
     % upper coordinates
-    x_upper = x(i) - yt(i)*sin(theta);
+    %x_upper = x(i) - yt(i)*sin(theta); %Not moving x-coordinates
     y_upper = yc + yt(i)*cos(theta);
     
     %lower coordinates
-    x_lower = x(i) + yt(i)*sin(theta);
+    %x_lower = x(i) + yt(i)*sin(theta); %Not moving x-coordinates
     y_lower = yc - yt(i)*cos(theta);
     
     % add upper coordinates to matrix
-    airfoilCoord(i,1) = x_upper;
+    airfoilCoord(i,1) = x(i);
     airfoilCoord(i,2) = y_upper;
     
     % add lower coordinates to matrix
-    airfoilCoord(end+1-i, 1) = x_lower;
+    airfoilCoord(end+1-i, 1) = x(i);
     airfoilCoord(end+1-i, 2) = y_lower;
     
 end
@@ -76,11 +74,20 @@ end
 % airfoilCoord = airfoilCoord./(max(airfoilCoord))
 airfoilCoord(length(x),:) = [];
 
-% create a file for the airfoil and populate it
-filename = sprintf('airfoilcoord%.0f.txt',def);
-fid = fopen(filename, 'w+t');
-fprintf(fid,'testfoil \n'); % at the top of the file, name xfoil will use
-fprintf(fid,'     %.8f    %.8f \n',airfoilCoord.'); % adding coordinates
-fclose(fid);
+% Average top and bottom slopes at TE to place sharp endpoint
+mtop = (airfoilCoord(1,2)-airfoilCoord(2,2))/(airfoilCoord(1,1)-airfoilCoord(2,1));
+mbot = (airfoilCoord(end,2)-airfoilCoord(end-1,2))/(airfoilCoord(end,1)-airfoilCoord(end-1,1));
+dx = (airfoilCoord(end,2)-airfoilCoord(1,2))/(mtop-mbot);
+xTE = x(1)+dx;
+yTE = airfoilCoord(1,2)+mtop*dx;
+airfoilCoord(1,:) = [xTE, yTE];
+airfoilCoord(end,:) = [xTE, yTE];
+
+% % create a file for the airfoil and populate it
+% filename = sprintf('airfoilcoord%.0f.txt',def);
+% fid = fopen(filename, 'w+t');
+% fprintf(fid,'testfoil \n'); % at the top of the file, name xfoil will use
+% fprintf(fid,'     %.8f    %.8f \n',airfoilCoord.'); % adding coordinates
+% fclose(fid);
 
 end
