@@ -256,6 +256,50 @@ end
 In = zeros(length(I2E),2);
 Bn = zeros(length(B2E),2);
 
+for i = 1:length(In)
+    elem = I2E(i,1);
+    edge = I2E(i,2);
+    
+    switch edge
+        case 1
+            inodes = [1,2];
+        case 2
+            inodes = [2,3];
+        case 3
+            inodes = [3,4];
+        case 4
+            inodes = [4,1];
+    end
+    
+    node1 = V(E2N(elem,inodes(1)),:);
+    node2 = V(E2N(elem,inodes(2)),:);
+    dl = node2-node1;
+    n = cross([dl,0],[0,0,1]);
+    In(i,:) = n(1:2)'/norm(n); %Normalize       
+end
+
+for i = 1:length(Bn)
+    elem = B2E(i,1);
+    edge = B2E(i,2);
+    
+    switch edge
+        case 1
+            inodes = [1,2];
+        case 2
+            inodes = [2,3];
+        case 3
+            inodes = [3,4];
+        case 4
+            inodes = [4,1];
+    end
+    
+    node1 = V(E2N(elem,inodes(1)),:);
+    node2 = V(E2N(elem,inodes(2)),:);
+    dl = node2-node1;
+    n = cross([dl,0],[0,0,1]);
+    Bn(i,:) = n(1:2)'/norm(n); %Normalize       
+end
+
 %% Store relevant data in struct
 dat.V = V;
 dat.E2N = E2N;
