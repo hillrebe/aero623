@@ -1,9 +1,12 @@
-function airfoilCoord = genAirfoil(maxCamber, locCamber, thickness)
+function airfoilCoord = genAirfoil(maxCamber, locCamber, thickness, def)
 
 % Inputs:
 % 1. maximum camber
 % 2. location of maximum camber
 % 3. maximum thickness
+% 4. filename to save
+
+genfile = 1; %Flag to generate airfoil coordinate .txt files [0 or 1]
 
 % converting the inputs to fractions
 maxCamber = maxCamber/100; 
@@ -83,11 +86,24 @@ yTE = airfoilCoord(1,2)+mtop*dx;
 airfoilCoord(1,:) = [xTE, yTE];
 airfoilCoord(end,:) = [xTE, yTE];
 
-% % create a file for the airfoil and populate it
-% filename = sprintf('airfoilcoord%.0f.txt',def);
-% fid = fopen(filename, 'w+t');
-% fprintf(fid,'testfoil \n'); % at the top of the file, name xfoil will use
-% fprintf(fid,'     %.8f    %.8f \n',airfoilCoord.'); % adding coordinates
-% fclose(fid);
+% Keep only the odd nodes (80 nodes total)
+icoords_keep = 1;
+coords_keep = zeros((length(airfoilCoord)+1)/2,2);
+for i = 1:length(airfoilCoord)
+    if mod(i,2) ~= 0
+        coords_keep(icoords_keep,:) = airfoilCoord(i,:);
+        icoords_keep = icoords_keep+1;
+    end
+end
+airfoilCoord = coords_keep;
+
+if genfile
+    % create a file for the airfoil and populate it
+    filename = sprintf('airfoilcoord%.0f.txt',def);
+    fid = fopen(filename, 'w+t');
+    fprintf(fid,'testfoil %.0f \n',def); % at the top of the file, name xfoil will use
+    fprintf(fid,'     %.15f    %.15f \n',airfoilCoord.'); % adding coordinates
+    fclose(fid);
+end
 
 end

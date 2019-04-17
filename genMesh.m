@@ -1,9 +1,10 @@
-function dat = genMesh(maxCamber, locCamber, thickness)
+function dat = genMesh(maxCamber, locCamber, thickness, def)
 
 % Inputs:
 % 1. maximum camber
 % 2. location of maximum camber
 % 3. maximum thickness
+% 4. filename to save
 %
 % Outputs:
 % 1. structure containing all relevant mesh data
@@ -14,23 +15,12 @@ plotstuff = 1; %0 to skip plotting mesh, 1 to plot mesh and airfoil
 dxLE = 50.; %x-offset of left side of mesh from LE of airfoil
 dyhalf = 50.; %y-offset of top/bottom of mesh from airfoil
 dxwake = 50.; %x-offset of wake from TE of airfoil
-nwake = 30; %Number of nodes in the x-direction of the wake (log spacing)
-nfar = 30; %Number of nodes in the y-direction away from the airfoil (log spacing)
+nwake = 50; %Number of nodes in the x-direction of the wake (log spacing)
+nfar = 50; %Number of nodes in the y-direction away from the airfoil (log spacing)
 
-% Call genAirfoil to obtain full set of airfoil coordinates
-coords = genAirfoil(maxCamber, locCamber, thickness);
+% Call genAirfoil to obtain (reduced) set of airfoil coordinates
+coords = genAirfoil(maxCamber, locCamber, thickness, def);
 xLE = min(coords(:,1)); %x-coordinate of LE nose
-
-% Keep only the odd nodes (80 nodes total)
-icoords_keep = 1;
-coords_keep = zeros((length(coords)+1)/2,2);
-for i = 1:length(coords)
-    if mod(i,2) ~= 0
-        coords_keep(icoords_keep,:) = coords(i,:);
-        icoords_keep = icoords_keep+1;
-    end
-end
-coords = coords_keep;
 numpts = length(coords); %Number of airfoil points kept (including double TE, excluding LE)
 
 % Determine edge points - top half
@@ -84,7 +74,7 @@ for i = ilin:length(xbot)
 end
 
 %% Wake region
-logfrac_wake = logspace(0.0,2.8,nwake)-1.0;
+logfrac_wake = logspace(0.0,3.0,nwake)-1.0;
 logfrac_wake = logfrac_wake/logfrac_wake(end);
 xwake = coords(1,1)+logfrac_wake'*(dxwake-coords(1,1));
 xwake = xwake(2:end);
@@ -106,7 +96,7 @@ for i = 1:length(disty)
 end
 
 % Apply log spacing from airfoil towards farfield and store node coords
-logfrac = logspace(0.0,2.8,nfar)-1.0;
+logfrac = logspace(0.0,3.0,nfar)-1.0;
 logfrac = logfrac/logfrac(end);
 
 nodesx = zeros(length(distx),nfar);
