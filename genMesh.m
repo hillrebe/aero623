@@ -14,8 +14,8 @@ plotstuff = 1; %0 to skip plotting mesh, 1 to plot mesh and airfoil
 dxLE = 50.; %x-offset of left side of mesh from LE of airfoil
 dyhalf = 50.; %y-offset of top/bottom of mesh from airfoil
 dxwake = 50.; %x-offset of wake from TE of airfoil
-nwake = 100; %Number of nodes in the x-direction of the wake (log spacing)
-nfar = 100; %Number of nodes in the y-direction away from the airfoil (log spacing)
+nwake = 30; %Number of nodes in the x-direction of the wake (log spacing)
+nfar = 30; %Number of nodes in the y-direction away from the airfoil (log spacing)
 
 % Call genAirfoil to obtain full set of airfoil coordinates
 coords = genAirfoil(maxCamber, locCamber, thickness);
@@ -84,8 +84,9 @@ for i = ilin:length(xbot)
 end
 
 %% Wake region
-
-xwake = logspace(log10(coords(1,1)),log10(dxwake),nwake)';
+logfrac_wake = logspace(0.0,2.8,nwake)-1.0;
+logfrac_wake = logfrac_wake/logfrac_wake(end);
+xwake = coords(1,1)+logfrac_wake'*(dxwake-coords(1,1));
 xwake = xwake(2:end);
 ywake = coords(1,2)*ones(size(xwake)); %Align wake y-coordinates with TE of airfoil
 ywake_far = dyhalf*ones(size(xwake));
@@ -105,7 +106,7 @@ for i = 1:length(disty)
 end
 
 % Apply log spacing from airfoil towards farfield and store node coords
-logfrac = logspace(0,2.0,nfar)-1.0;
+logfrac = logspace(0.0,2.8,nfar)-1.0;
 logfrac = logfrac/logfrac(end);
 
 nodesx = zeros(length(distx),nfar);
